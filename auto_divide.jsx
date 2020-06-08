@@ -120,11 +120,6 @@ function is_in_text(all_edges, line){
     var right_point = Array(1000000.0, center[1] + 1000000.0);
     var scanline = Array(center, right_point);
 
-    // alert("center\n" + String(center));
-    // alert("right_point\n" + String(right_point));
-    // alert("scanline" + String(scanline));
-    // return;
-
     if(scanline == undefined){
         alert("scanline is undifined");
     }
@@ -139,6 +134,18 @@ function is_in_text(all_edges, line){
 
     // 奇数回なら内部 偶数回なら外部
     return intersect_cnt%2 == 1;
+}
+
+function is_already_exists(indices_buffer, sel_id, i, min_sel_id, min_pt_id){
+    for (var buf_id = 0; buf_id < indices_buffer.length; buf_id++){
+        if(indices_buffer[buf_id][0] == sel_id
+        && indices_buffer[buf_id][1] == i
+        && indices_buffer[buf_id][2] == min_sel_id
+        && indices_buffer[buf_id][3] == min_pt_id ){
+            return true;
+        }
+    }
+    return false;
 }
 
 //-----------------------main---------------------------
@@ -159,6 +166,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 }
 // alert("edges cnt: " + String(all_edges.length));
 
+var indices_buffer = []
 
 // selection loop
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
@@ -203,6 +211,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
         var is_next = min_sel_id == sel_id && min_pt_id == i+1;
         var is_prev = min_sel_id == sel_id && min_pt_id == i-1;
         if(!is_next && !is_prev){
+
             // エッジをまたいでたら引かない
             var min_point = sels[min_sel_id].pathPoints[min_pt_id].anchor;
             var line_vec = Array(points[i].anchor, min_point);
@@ -214,6 +223,12 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             // テキストの外部なら引かない
             if(!is_in_text(all_edges, line_vec)){
                 // alert("is out the text");
+                continue;
+            }
+
+            // インデックスバッファに既にある場合は引かない
+            if(is_already_exists(indices_buffer, sel_id, i, min_sel_id, min_pt_id)){
+                alert("is_already_exists");
                 continue;
             }
 
@@ -230,15 +245,16 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             
             line.setEntirePath(Array(points[i].anchor, min_point));
 
+            // インデックスバッファに保存
+            indices_buffer.push([sel_id, i, min_sel_id, min_pt_id]);
+
             // line.selected = true;
         }
     }
-
 }
-    app.executeMenuCommand('group');
-    app.executeMenuCommand("Live Pathfinder Exclude");
-    app.executeMenuCommand('expandStyle');
-    app.executeMenuCommand('ungroup');
-
+app.executeMenuCommand('group');
+app.executeMenuCommand("Live Pathfinder Exclude");
+app.executeMenuCommand('expandStyle');
+app.executeMenuCommand('ungroup');
 
 // alert("end");
