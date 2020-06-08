@@ -21,8 +21,7 @@ function get_selected_points(selection){
     // 適当に線形探索で取る関数を作った（よく分からない）
 
     points = selection.pathPoints;
-    // 選択アイテムがpathItemじゃない場合
-    // pointsがundefinedとなる
+    // 選択アイテムがpathItemじゃない場合、pointsがundefinedとなる
     if(points == undefined){
         alert("please ungroup and uncompoundpath!");
     }
@@ -39,7 +38,7 @@ function get_selected_points(selection){
 if (sels.length > 0){
     points = get_selected_points(sels[0]);
     if(points.length < 2){
-        alert("too few points!");
+        alert("select 2 points!: " + String(points.length));
     }
     add_line(points[0], points[1]);
 }
