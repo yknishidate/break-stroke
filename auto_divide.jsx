@@ -108,6 +108,41 @@ function intersect_any(all_edges, line){
     return false;
 }
 
+function calc_center(line){
+    var pos1 = line[0];
+    var pos2 = line[1];
+    var center = Array((pos1[0] + pos2[0])/2, (pos1[1] + pos2[1])/2);
+    return center;
+}
+
+function is_in_text(all_edges, line){
+    var center = calc_center(line);
+    var right_point = Array(1000000.0, center[1] + 1000000.0);
+    var scanline = Array(center, right_point);
+
+    // alert("center\n" + String(center));
+    // alert("right_point\n" + String(right_point));
+    // alert("scanline" + String(scanline));
+    // return;
+
+    if(scanline == undefined){
+        alert("scanline is undifined");
+    }
+
+    var intersect_cnt = 0;
+
+    for(var i = 0; i < all_edges.length; i++){
+        if(intersect(all_edges[i], scanline)){
+            intersect_cnt++;
+        }
+    }
+
+    // 奇数回なら内部 偶数回なら外部
+    return intersect_cnt%2 == 1;
+}
+
+//-----------------------main---------------------------
+
 // calc all edges
 var all_edges = []
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
@@ -176,6 +211,12 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 continue;
             }
 
+            // テキストの外部なら引かない
+            if(!is_in_text(all_edges, line_vec)){
+                // alert("is out the text");
+                continue;
+            }
+
             // add line
             var line = doc.pathItems.add();
 
@@ -193,11 +234,11 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
         }
     }
 
+}
     app.executeMenuCommand('group');
     app.executeMenuCommand("Live Pathfinder Exclude");
     app.executeMenuCommand('expandStyle');
     app.executeMenuCommand('ungroup');
-}
 
 
 // alert("end");
