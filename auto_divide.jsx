@@ -138,12 +138,7 @@ function is_in_text(all_edges, line){
 
 function is_already_exists(indices_buffer, sel_id, i, min_sel_id, min_pt_id){
     for (var buf_id = 0; buf_id < indices_buffer.length; buf_id++){
-        if(indices_buffer[buf_id][0] == sel_id
-        && indices_buffer[buf_id][1] == i
-        && indices_buffer[buf_id][2] == min_sel_id
-        && indices_buffer[buf_id][3] == min_pt_id ){
-            return true;
-        }
+        // 逆順で既に入っている
         if(indices_buffer[buf_id][0] == min_sel_id
         && indices_buffer[buf_id][1] == min_pt_id
         && indices_buffer[buf_id][2] == sel_id
