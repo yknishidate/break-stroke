@@ -1,7 +1,12 @@
+
+
 var doc = app.activeDocument;
 sels = app.activeDocument.selection;
 if (sels.length > 0){
     points = sels[0].pathPoints;
+    if(points == undefined){
+        alert("please ungroup and uncompoundpath");
+    }
     var list = []
     for (var i = 0; i < points.length; i++) {
         if(points[i].selected == PathPointSelection.ANCHORPOINT){

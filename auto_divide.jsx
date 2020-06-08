@@ -128,7 +128,7 @@ function intersect(edge, line){
 
 function intersect_any(all_edges, line){
     if(line == undefined){
-        alert("line is undifined");
+        alert("line is undefined");
     }
     for(var i = 0; i < all_edges.length; i++){
         if(intersect(all_edges[i], line)){
@@ -151,7 +151,7 @@ function is_in_text(all_edges, line){
     var scanline = Array(center, right_point);
 
     if(scanline == undefined){
-        alert("scanline is undifined");
+        alert("scanline is undefined");
     }
 
     var intersect_cnt = 0;
@@ -203,7 +203,7 @@ var indices_buffer = []
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
     points = sels[sel_id].pathPoints;
 
-    // pathItemじゃない場合はpointsがundifined
+    // pathItemじゃない場合はpointsがundefined
     if(points == undefined){
         continue;
     }
