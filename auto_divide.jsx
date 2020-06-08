@@ -4,6 +4,7 @@ app.executeMenuCommand("noCompoundPath");
 
 doc = app.activeDocument;
 sels = doc.selection;
+doc.layers.add();
 
 function sub(a, b){
     return Array(a[0] - b[0], a[1] - b[1]);
@@ -179,6 +180,20 @@ function is_already_exists(indices_buffer, sel_id, i, min_sel_id, min_pt_id){
     return false;
 }
 
+function add_line(pos1, pos2){
+    var line = doc.pathItems.add();
+
+    // stroke
+    line.stroked = true;
+    var newRGBColor = new RGBColor();
+    newRGBColor.red = 255;
+    newRGBColor.green = 0;
+    newRGBColor.blue = 0;
+    line.strokeColor = newRGBColor;
+
+    line.setEntirePath(Array(pos1, pos2));
+}
+
 //-----------------------main---------------------------
 
 // calc all edges
@@ -194,6 +209,9 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
         }
         all_edges.push(edge);
     }
+}
+if(all_edges.length > 300){
+    alert("The process takes a long time because there are so many points!");
 }
 // alert("edges cnt: " + String(all_edges.length));
 
@@ -253,8 +271,8 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             }
         }
 
+        // 最小コスト2番目まで追加する
         for(var line_id=0; line_id<2; line_id++){
-            // 1番小さいライン
             // 道なりでなければ線をひく
             var is_next = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i+1;
             var is_prev = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i-1;
@@ -271,13 +289,11 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 var min_point = sels[min_sel_id[line_id]].pathPoints[min_pt_id[line_id]].anchor;
                 var line_vec = Array(points[i].anchor, min_point);
                 if(intersect_any(all_edges, line_vec)){
-                    // alert("intersected");
                     continue;
                 }
     
                 // テキストの外部なら引かない
                 if(!is_in_text(all_edges, line_vec)){
-                    // alert("is out the text");
                     continue;
                 }
     
@@ -286,19 +302,8 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 //     alert("is_already_exists");
                 //     continue;
                 // }
-    
-                // add line
-                var line = doc.pathItems.add();
-    
-                // Debug
-                line.stroked = true;
-                var newRGBColor = new RGBColor();
-                newRGBColor.red = 255;
-                newRGBColor.green = 0;
-                newRGBColor.blue = 0;
-                line.strokeColor = newRGBColor;
-                
-                line.setEntirePath(Array(points[i].anchor, min_point));
+
+                add_line(points[i].anchor, min_point);
     
                 // インデックスバッファに保存
                 indices_buffer.push([sel_id, i, min_sel_id[line_id], min_pt_id[line_id]]);
