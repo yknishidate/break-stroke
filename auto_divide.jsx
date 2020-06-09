@@ -107,6 +107,7 @@ function intersect_any(all_edges, line){
     if(line == undefined){
         alert("line is undefined");
     }
+    // TODO: セレクションのバウンディングボックス事前交差判定で高速化する
     for(var i = 0; i < all_edges.length; i++){
         if(intersect(all_edges[i], line)){
             return true;
@@ -136,6 +137,7 @@ function is_in_text(all_edges, line){
     }
 
     var intersect_cnt = 0;
+    // TODO: セレクションのバウンディングボックス事前交差判定で高速化する
     for(var i = 0; i < all_edges.length; i++){
         if(intersect(all_edges[i], scanline)){
             intersect_cnt++;
@@ -204,6 +206,7 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
 //-----------------------main---------------------------
 // 選択されたテキストが含む全ての辺を計算しておく
+// TODO: 高速化のためにセレクションとそれが含むポイントの2次元配列にする
 var all_edges = []
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
     points = sels[sel_id].pathPoints;
