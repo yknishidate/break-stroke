@@ -232,10 +232,10 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
     }
 
     // point loop
-    for (var i = 0; i < points.length; i++) {
+    for (var pt_id = 0; pt_id < points.length; pt_id++) {
         // 最初と最後のポイントは無視
         // TODO: ここ対応する
-        if(i == 0 || i == points.length-1){
+        if(pt_id == 0 || pt_id == points.length-1){
             continue;
         }
 
@@ -245,12 +245,12 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
         var min_pt_id = [-1, -1];
         for(var cur_sel_id = 0; cur_sel_id < sels.length; cur_sel_id++){
             cur_points = sels[cur_sel_id].pathPoints;
-            for(var j = 0; j < cur_points.length; j++){
-                if(cur_sel_id == sel_id && j == i){
+            for(var cur_pt_id = 0; cur_pt_id < cur_points.length; cur_pt_id++){
+                if(cur_sel_id == sel_id && cur_pt_id == pt_id){
                     continue;
                 }
 
-                var cost = calc_cost(sel_id, i, cur_sel_id, j);
+                var cost = calc_cost(sel_id, pt_id, cur_sel_id, cur_pt_id);
 
                 if(cost < min_cost){
                     // それまでの最小コストが新しい最小コストとあまり変わらなければ2番目として取っておく
@@ -269,7 +269,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
                     // 最小コストのインデックスを更新
                     min_sel_id[0] = cur_sel_id;
-                    min_pt_id[0] = j;
+                    min_pt_id[0] = cur_pt_id;
                 }
             }
         }
@@ -282,15 +282,15 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             }
 
             // テキストの辺であれば線をひかない
-            var is_next = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i+1;
-            var is_prev = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i-1;
+            var is_next = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == pt_id+1;
+            var is_prev = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == pt_id-1;
             if(is_next || is_prev){
                 continue;
             }
 
             // エッジを跨いでたら引かない
             var min_pos = sels[min_sel_id[line_id]].pathPoints[min_pt_id[line_id]].anchor;
-            var line = [points[i].anchor, min_pos];
+            var line = [points[pt_id].anchor, min_pos];
             if(intersect_any(all_edges, line)){
                 continue;
             }
@@ -300,7 +300,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 continue;
             }
 
-            add_line(points[i].anchor, min_pos);
+            add_line(points[pt_id].anchor, min_pos);
     
         }
     }
