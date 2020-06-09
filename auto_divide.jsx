@@ -7,6 +7,20 @@ sels = doc.selection;
 doc.layers.add();
 
 EPS = 0.0001;
+MAX = 10000000000;
+x_axis = [1.0, 0.0];
+
+//-----------------------parameters---------------------------
+weight_jump_point = 0.5;        // 隣接ポイント以外に飛ぶことに掛かるウェイト
+weight_distance = 3.0;          // 距離の遠さに掛かるウェイト
+weight_direction = 3.0;         // 進行方向からのズレに掛かるウェイト
+weight_gradient = 0.2;          // ラインの傾きに掛かるウェイト
+
+// 基本的には最小コストのラインを1本引くが、2番目にコストが小さい
+// ラインが十分最小コストに近い場合は2本目を引いてよい
+// この時の「十分に小さい」を判定するための閾値
+threshold_second_line = 1.3;
+
 
 //-----------------------vec2---------------------------
 function sub(a, b){
@@ -76,6 +90,7 @@ function intersect(edge, line){
     // 線分と線分の交差判定
     // 線分aに対して線分bの頂点が左右両側に存在し、逆も同様であれば交差している
     // 線分aに対して頂点がどちら側にあるのかは外積の符号で判定できる
+
     var a1 = edge[0];
     var a2 = edge[1];
     var b1 = line[0];
@@ -129,73 +144,63 @@ function is_in_text(all_edges, line){
     return intersect_cnt%2 == 1;
 }
 
-function exists(indices_buffer, sel_id, i, min_sel_id, min_pt_id){
-    for (var buf_id = 0; buf_id < indices_buffer.length; buf_id++){
-        // 逆順で既に入っている
-        if(indices_buffer[buf_id][0] == min_sel_id
-        && indices_buffer[buf_id][1] == min_pt_id
-        && indices_buffer[buf_id][2] == sel_id
-        && indices_buffer[buf_id][3] == i ){
-            return true;
-        }
-    }
-    return false;
-}
-
-
 
 //-----------------------cost---------------------------
 function calc_cost(sel_id, i, cur_sel_id, j){
     // スクリプトのメインとなるコスト関数
+    // TODO: フォントによってウェイトを変更する。明朝体であれば距離コストを下げるなど
+    // TODO: 文字種によってウェイトを変更する。ひらがなであれば斜めコストを下げるなど
+    
     var cost = 0;
 
     base_points = sels[sel_id].pathPoints;
-    base_point = base_points[i].anchor;
-    target_point = sels[cur_sel_id].pathPoints[j].anchor;
+    base_pos = base_points[i].anchor;
+    target_pos = sels[cur_sel_id].pathPoints[j].anchor;
 
-    // 道なりに進まないコスト
+    
+    // 隣接ポイント以外に進むコスト
     if(sel_id != cur_sel_id || j - i != 1){
-        cost += 0.5;
+        cost += weight_jump_point;
     }
+
 
     // 距離コスト
     // 何かしらで正規化が必要 -> 隣接する辺でより短い方を基準値とする
-    var orig_dist1 = calc_distance(base_point, base_points[i+1].anchor);
-    var orig_dist2 = calc_distance(base_point, base_points[i-1].anchor);
-    var orig_dist = Math.min(orig_dist1, orig_dist2);
+    var dist_to_next = calc_distance(base_pos, base_points[i+1].anchor);
+    var dist_to_prev = calc_distance(base_pos, base_points[i-1].anchor);
+    var dist_for_norm = Math.min(dist_to_next, dist_to_prev);
 
-    var dist = calc_distance(base_point, target_point);
-    cost += 3.0 * (dist/orig_dist);
+    var dist = calc_distance(base_pos, target_pos);
+    cost += weight_distance * (dist/dist_for_norm);
     
+
     // 方向コスト
     // ポイントの左右の方向ベクトルを計算
-    var dir_from_prev = dir(base_points[i-1].anchor, base_point);
+    var dir_from_prev = dir(base_points[i-1].anchor, base_pos);
     if(has_left_handle(base_points[i])){  // ハンドルを持っている場合はベクトルを変更
         var left_pos = base_points[i].leftDirection;
-        dir_from_prev = dir(left_pos, base_point);
+        dir_from_prev = dir(left_pos, base_pos);
     }
-    var dir_from_next = dir(base_points[i+1].anchor, base_point);
+    var dir_from_next = dir(base_points[i+1].anchor, base_pos);
     if(has_right_handle(base_points[i])){  // ハンドルを持っている場合はベクトルを変更
         var right_pos = base_points[i].rightDirection;
-        dir_from_next = dir(right_pos, base_point);
+        dir_from_next = dir(right_pos, base_pos);
     }
     // target->baseのベクトルが左右(のより近い方)からどれだけずれているか
-    var new_dir = dir(base_point, target_point);
-    cost += 3.0 * (1 - Math.max(dot(dir_from_prev, new_dir), dot(dir_from_next, new_dir)));
+    var new_dir = dir(base_pos, target_pos);
+    cost += weight_direction * (1 - Math.max(dot(dir_from_prev, new_dir), dot(dir_from_next, new_dir)));
 
 
     // 斜めに進むコスト
-    var x_axis = [1.0, 0.0];
     var theta_deg = Math.acos(dot(new_dir, x_axis)) * ( 180 / Math.PI );
-    cost += 0.2 * (theta_deg % 90) / 90;
+    cost += weight_gradient * (theta_deg % 90) / 90;
+
 
     return cost;
 }
 
 
-
 //-----------------------main---------------------------
-
 // 選択されたテキストが含む全ての辺を計算しておく
 var all_edges = []
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
@@ -211,7 +216,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
     }
 }
 if(all_edges.length > 300){
-    alert("The process takes a long time because there are so many points!");
+    alert("This process takes a long time!");
 }
 
 
@@ -226,15 +231,14 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
     // point loop
     for (var i = 0; i < points.length; i++) {
-        // // alert(points[i].anchor);
-
         // 最初と最後のポイントは無視
+        // TODO: ここ対応する
         if(i == 0 || i == points.length-1){
             continue;
         }
 
         // 全セレクションに対して探索
-        var min_cost = 100000000;
+        var min_cost = MAX;
         var min_sel_id = [-1, -1];
         var min_pt_id = [-1, -1];
         for(var cur_sel_id = 0; cur_sel_id < sels.length; cur_sel_id++){
@@ -247,10 +251,9 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 var cost = calc_cost(sel_id, i, cur_sel_id, j);
 
                 if(cost < min_cost){
-                    var n = 1.3;
-                    // 最小コストのn倍未満であれば2番目にいれていい
-                    if(min_cost < cost*n){
-                        // 0->iにずらす(2番目に小さい)
+                    // 最小コストの更新率が小さい場合は元のコスト最小ラインを2番目のラインとして取っておく
+                    if(min_cost < cost*threshold_second_line){
+                        // 0->1にずらす(2番目に小さい)
                         min_sel_id[1] = min_sel_id[0];
                         min_pt_id[1] = min_pt_id[0];
                     }
@@ -262,42 +265,44 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
                     min_cost = cost;
 
-                    // // 1番小さい
+                    // 1番小さい
                     min_sel_id[0] = cur_sel_id;
                     min_pt_id[0] = j;
                 }
             }
         }
 
-        // 最小コスト2番目まで追加する
+        // 最小コスト2番目までラインを追加する
         for(var line_id=0; line_id<2; line_id++){
-            // 道なりでなければ線をひく
+            // テキストの辺であれば線をひかない
             var is_next = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i+1;
             var is_prev = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i-1;
-            if(!is_next && !is_prev){
-    
-                if(min_sel_id[line_id] == -1){
-                    continue;
-                }
-                if(min_pt_id[line_id] == -1){
-                    continue;
-                }
-    
-                // エッジをまたいでたら引かない
-                var min_point = sels[min_sel_id[line_id]].pathPoints[min_pt_id[line_id]].anchor;
-                var line_vec = [points[i].anchor, min_point];
-                if(intersect_any(all_edges, line_vec)){
-                    continue;
-                }
-    
-                // テキストの外部なら引かない
-                if(!is_in_text(all_edges, line_vec)){
-                    continue;
-                }
-    
-                add_line(points[i].anchor, min_point);
-    
+            if(is_next || is_prev){
+                continue;
             }
+
+            // データが捨てられている場合は無視
+            if(min_sel_id[line_id] == -1){
+                continue;
+            }
+            if(min_pt_id[line_id] == -1){
+                continue;
+            }
+
+            // エッジを跨いでたら引かない
+            var min_point = sels[min_sel_id[line_id]].pathPoints[min_pt_id[line_id]].anchor;
+            var line_vec = [points[i].anchor, min_point];
+            if(intersect_any(all_edges, line_vec)){
+                continue;
+            }
+
+            // テキストの外部なら引かない
+            if(!is_in_text(all_edges, line_vec)){
+                continue;
+            }
+
+            add_line(points[i].anchor, min_point);
+    
         }
     }
 }
