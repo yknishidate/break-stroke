@@ -7,11 +7,11 @@ sels = doc.selection;
 doc.layers.add();
 
 EPS = 0.0001;
-MAX = 10000000000;
+MAX = 1000000;
 x_axis = [1.0, 0.0];
 
 //-----------------------parameters---------------------------
-cost_jump_point = 0.5;        // 隣接ポイント以外に飛ぶことに掛かるコスト
+cost_jump_point = 0.5;          // 隣接ポイント以外に飛ぶことに掛かるコスト
 weight_distance = 3.0;          // 距離の遠さに掛かるウェイト
 weight_direction = 3.0;         // 進行方向からのズレに掛かるウェイト
 weight_gradient = 0.2;          // ラインの傾きに掛かるウェイト
@@ -126,7 +126,7 @@ function is_in_text(all_edges, line){
     // それがテキストのエッジと何度交差したかで内外判定を行う
 
     var center = calc_center(line);
-    var right_point = [1000000.0, center[1] + 1000000.0];
+    var right_point = [MAX, center[1] + MAX];
     var scanline = [center, right_point];
 
     if(scanline == undefined){
