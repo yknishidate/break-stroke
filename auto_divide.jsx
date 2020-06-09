@@ -8,7 +8,7 @@ doc.layers.add();
 
 EPS = 0.0001;
 MAX = 1000000;
-x_axis = [1.0, 0.0];
+X_AXIS = [1.0, 0.0];
 
 //-----------------------parameters---------------------------
 cost_jump_point = 0.5;          // 隣接ポイント以外に飛ぶことに掛かるコスト
@@ -194,7 +194,7 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
 
     // 斜めに進むコスト
-    var theta_deg = Math.acos(dot(new_dir, x_axis)) * ( 180 / Math.PI );
+    var theta_deg = Math.acos(dot(new_dir, X_AXIS)) * ( 180 / Math.PI );
     cost += weight_gradient * (theta_deg % 90) / 90;
 
 
