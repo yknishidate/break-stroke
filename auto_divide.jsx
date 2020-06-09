@@ -189,11 +189,6 @@ function calc_cost(sel_id, i, cur_sel_id, j){
     var theta_deg = Math.acos(dot(new_dir, x_axis)) * ( 180 / Math.PI );
     cost += 0.2 * (theta_deg % 90) / 90;
 
-    // セレクション跨ぎコスト
-    // if(sel_id != cur_sel_id){
-    //     cost += 1.0;
-    // }
-
     return cost;
 }
 
@@ -218,9 +213,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 if(all_edges.length > 300){
     alert("The process takes a long time because there are so many points!");
 }
-// alert("edges cnt: " + String(all_edges.length));
 
-var indices_buffer = []
 
 // selection loop
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
@@ -302,16 +295,8 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                     continue;
                 }
     
-                // インデックスバッファに既にある場合は引かない
-                // if(exists(indices_buffer, sel_id, i, min_sel_id[line_id], min_pt_id[line_id])){
-                //     alert("exists");
-                //     continue;
-                // }
-
                 add_line(points[i].anchor, min_point);
     
-                // インデックスバッファに保存
-                indices_buffer.push([sel_id, i, min_sel_id[line_id], min_pt_id[line_id]]);
             }
         }
     }
