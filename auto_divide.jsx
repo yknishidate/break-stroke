@@ -253,13 +253,13 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 var cost = calc_cost(sel_id, i, cur_sel_id, j);
 
                 if(cost < min_cost){
-                    // 最小コストの更新率が小さい場合は元のコスト最小ラインを2番目のラインとして取っておく
+                    // それまでの最小コストが新しい最小コストとあまり変わらなければ2番目として取っておく
                     if(min_cost < cost*threshold_second_line){
                         // 0->1にずらす(2番目に小さい)
                         min_sel_id[1] = min_sel_id[0];
                         min_pt_id[1] = min_pt_id[0];
                     }
-                    // n倍以上の差があれば捨てる
+                    // 最小コストから十分離れていれば捨てる
                     else{
                         min_sel_id[1] = -1;
                         min_pt_id[1] = -1;
@@ -267,15 +267,20 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
                     min_cost = cost;
 
-                    // 1番小さい
+                    // 最小コストのインデックスを更新
                     min_sel_id[0] = cur_sel_id;
                     min_pt_id[0] = j;
                 }
             }
         }
 
-        // 最小コスト2番目までラインを追加する
+        // 最小コストラインを追加する(最大2本まで)
         for(var line_id=0; line_id<2; line_id++){
+            // データが捨てられている場合は無視
+            if(min_sel_id[line_id] == -1 || min_pt_id[line_id] == -1){
+                continue;
+            }
+
             // テキストの辺であれば線をひかない
             var is_next = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i+1;
             var is_prev = min_sel_id[line_id] == sel_id && min_pt_id[line_id] == i-1;
@@ -283,27 +288,19 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 continue;
             }
 
-            // データが捨てられている場合は無視
-            if(min_sel_id[line_id] == -1){
-                continue;
-            }
-            if(min_pt_id[line_id] == -1){
-                continue;
-            }
-
             // エッジを跨いでたら引かない
-            var min_point = sels[min_sel_id[line_id]].pathPoints[min_pt_id[line_id]].anchor;
-            var line_vec = [points[i].anchor, min_point];
-            if(intersect_any(all_edges, line_vec)){
+            var min_pos = sels[min_sel_id[line_id]].pathPoints[min_pt_id[line_id]].anchor;
+            var line = [points[i].anchor, min_pos];
+            if(intersect_any(all_edges, line)){
                 continue;
             }
 
             // テキストの外部なら引かない
-            if(!is_in_text(all_edges, line_vec)){
+            if(!is_in_text(all_edges, line)){
                 continue;
             }
 
-            add_line(points[i].anchor, min_point);
+            add_line(points[i].anchor, min_pos);
     
         }
     }
