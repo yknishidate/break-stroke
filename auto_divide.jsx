@@ -21,6 +21,8 @@ weight_gradient = 0.2;          // ラインの傾きに掛かるウェイト
 // この時の「十分に近い」を判定するための閾値
 threshold_second_line = 1.3;
 
+// 線の色
+line_color = [255, 0, 0];
 
 //-----------------------vec2---------------------------
 function sub(a, b){
@@ -78,9 +80,9 @@ function add_line(pos1, pos2){
     // stroke
     line.stroked = true;
     var newRGBColor = new RGBColor();
-    newRGBColor.red = 255;
-    newRGBColor.green = 0;
-    newRGBColor.blue = 0;
+    newRGBColor.red = line_color[0];
+    newRGBColor.green = line_color[1];
+    newRGBColor.blue = line_color[2];
     line.strokeColor = newRGBColor;
 
     line.setEntirePath([pos1, pos2]);
