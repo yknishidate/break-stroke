@@ -1,3 +1,14 @@
+/*
+ *
+ * "AT-Divider"
+ *
+ * Automatic Text Divider for Adobe Illustrator
+ * 
+ * Copyright (c) 2020 Nishiki(Yuki Nishidate)
+ * 
+ */
+
+
 app.executeMenuCommand("outline");
 app.executeMenuCommand('ungroup');
 app.executeMenuCommand("noCompoundPath");
@@ -9,10 +20,6 @@ doc.layers.add();
 EPS = 0.0001;
 MAX = 1000000;
 X_AXIS = [1.0, 0.0];
-
-function round(value) {
-    return Math.round(value * 10) / 10;
-}
 
 
 //-----------------------parameters---------------------------
@@ -165,20 +172,19 @@ function calc_cost(sel_id, i, cur_sel_id, j){
     base_pos = base_points[i].anchor;
     target_pos = sels[cur_sel_id].pathPoints[j].anchor;
 
-    // 隣接ポイント以外に進むコスト
+    // * 隣接ポイント以外に進むコスト
     if(sel_id != cur_sel_id || j - i != 1){
         cost += cost_jump_point;
     }
 
-    // 距離コスト
+    // * 距離コスト
     // セレクション全体の大きさを基準にする
     var standard_dist = Math.min(sels[sel_id].height, sels[sel_id].width);
     var dist = calc_distance(base_pos, target_pos);
     cost += weight_distance * (dist/standard_dist);
 
-
-    // 方向コスト
-    // ポイントの左右の方向ベクトルを計算
+    // * 方向コスト
+    // 前のポイントからの方向ベクトルを求める
     var prev_id = i-1;
     if(i == 0){
         prev_id = base_points.length - 1;
@@ -188,7 +194,7 @@ function calc_cost(sel_id, i, cur_sel_id, j){
         var left_pos = base_points[i].leftDirection;
         dir_from_prev = dir(left_pos, base_pos);
     }
-
+    // 後のポイントからの方向ベクトルを求める
     var next_id = i+1;
     if(i == base_points.length - 1){
         next_id = 1;
@@ -198,13 +204,12 @@ function calc_cost(sel_id, i, cur_sel_id, j){
         var right_pos = base_points[i].rightDirection;
         dir_from_next = dir(right_pos, base_pos);
     }
-    // target->baseのベクトルが左右(のより近い方)からどれだけずれているか
+    // target->baseの方向ベクトルが、前後からのベクトル(のより近い方)からどれだけずれているか
     var new_dir = dir(base_pos, target_pos);
     var max_dot = Math.max(dot(dir_from_prev, new_dir), dot(dir_from_next, new_dir));
     cost += weight_direction * (1 - max_dot);
 
-
-    // 斜めに進むコスト
+    // * 斜めに進むコスト
     var theta_deg = Math.acos(dot(new_dir, X_AXIS)) * ( 180 / Math.PI );
     cost += weight_gradient * (theta_deg % 90) / 90;
 
