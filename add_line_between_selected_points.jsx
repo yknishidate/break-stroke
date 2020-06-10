@@ -43,7 +43,7 @@ if (sels.length > 0){
     add_line(points[0], points[1]);
 }
 
-app.executeMenuCommand('group');
-app.executeMenuCommand("Live Pathfinder Exclude");
-app.executeMenuCommand('expandStyle');
-app.executeMenuCommand('ungroup');
+// app.executeMenuCommand('group');
+// app.executeMenuCommand("Live Pathfinder Exclude");
+// app.executeMenuCommand('expandStyle');
+// app.executeMenuCommand('ungroup');
