@@ -21,9 +21,9 @@ weight_distance = 3.0;          // 距離の遠さに掛かるウェイト
 weight_direction = 3.0;         // 進行方向からのズレに掛かるウェイト
 weight_gradient = 0.2;          // ラインの傾きに掛かるウェイト
 
-// 基本的には最小コストのラインを1本引くが、2番目にコストが小さい
-// ラインが十分最小コストに近い場合は2本目を引いてよい
-// この時の「十分に近い」を判定するための閾値
+// 基本的にはある点から最小コストの点をラインで結ぶ
+// ただし、最小コストに近いラインは追加で引ける
+// このときの近いかの判定に使う閾値
 threshold_second_line = 1.2;
 
 // 線の色
@@ -32,10 +32,6 @@ line_color = [255, 0, 0];
 //-----------------------vec2---------------------------
 function sub(a, b){
     return [a[0] - b[0], a[1] - b[1]];
-}
-
-function minus(a){
-    return [-a[0], -a[1]];
 }
 
 function calc_distance(pos1, pos2){
@@ -248,12 +244,6 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
     // point loop
     for (var pt_id = 0; pt_id < points.length; pt_id++) {
-        // 最初と最後のポイントは無視
-        // TODO: ここ対応する
-        // if(pt_id == 0 || pt_id == points.length-1){
-        //     continue;
-        // }
-
         // 全セレクションに対して探索
         var sorted_cost = [MAX];
         var sorted_sel_id = [-1];
@@ -286,11 +276,6 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 break;
             }
             
-            // データが捨てられている場合は無視
-            if(sorted_sel_id[line_id] == -1 || sorted_pt_id[line_id] == -1){
-                break;
-            }
-
             // テキストの辺であれば線をひかない
             var is_next = sorted_sel_id[line_id] == sel_id && sorted_pt_id[line_id] == pt_id+1;
             var is_prev = sorted_sel_id[line_id] == sel_id && sorted_pt_id[line_id] == pt_id-1;
@@ -320,5 +305,3 @@ app.executeMenuCommand('group');
 app.executeMenuCommand("Live Pathfinder Exclude");
 app.executeMenuCommand('expandStyle');
 app.executeMenuCommand('ungroup');
-
-// alert("end");
