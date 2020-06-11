@@ -2,7 +2,7 @@
 
 Automatic Text Divider for Adobe Illustrator
 
-![Asset 2@4x](https://user-images.githubusercontent.com/30839669/84329648-3802ce80-abc0-11ea-83a0-e4e3520c714c.png)
+![Asset 2@4x](https://user-images.githubusercontent.com/30839669/84331674-cb8ace00-abc5-11ea-921b-0c86e0f2b5e6.png)
 
 # Installation
 
