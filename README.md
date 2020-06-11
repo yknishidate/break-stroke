@@ -11,6 +11,6 @@ Download "at_divider.jsx" and put it in your Adobe Illustrator's script folder.
 > example) "C:\Program Files\Adobe Illustrator 2020\Presets\en_US\Scripts"
 
 # Usage
-Youtube Link
+Youtube Link: https://youtu.be/IV78b6o1Mdo
 
 [![title](https://user-images.githubusercontent.com/30839669/84331480-3e477980-abc5-11ea-843b-4e519175a4b0.png)](https://youtu.be/IV78b6o1Mdo)
