@@ -1,8 +1,8 @@
 /*
  *
- * "AT-Divider"
+ * "Break Stroke"
  *
- * Automatic Text Divider for Adobe Illustrator
+ * Automatic Character Divider for Adobe Illustrator
  * 
  * Copyright (c) 2020 Nishiki(Yuki Nishidate)
  * 
