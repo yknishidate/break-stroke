@@ -125,8 +125,6 @@ function intersect_any(all_edges, line, sel_id){
 
     var line_char_id = char_ids[sel_id];
     for(var i = 0; i < all_edges.length; i++){
-        // セレクション全体と事前交差判定を行う
-
         // 異なる文字との間に元々ラインは引かれないためスキップ
         if(line_char_id != char_ids[i]){
             continue;
@@ -140,7 +138,6 @@ function intersect_any(all_edges, line, sel_id){
             }
         }
     }
-
 
     return false;
 }
@@ -199,17 +196,20 @@ function intersect_selections(pathitem1, pathitem2){
     var sum_w = Math.max(bb1[2], bb2[2]) - Math.min(bb1[0], bb2[0]);
     var sum_h = Math.max(bb1[1], bb2[1]) - Math.min(bb1[3], bb2[3]);
 
-    return (sum_w < (path_width(pathitem1) + path_width(pathitem2))) && (sum_h < (path_height(pathitem1) + path_height(pathitem2)));
+    var intersect_x = sum_w < (path_width(pathitem1) + path_width(pathitem2));
+    var intersect_y = sum_h < (path_height(pathitem1) + path_height(pathitem2));
+
+    return intersect_x && intersect_y;
 }
 
 function path_width(path){
-    // CompoundPathはnoCompoundPathを実行した後widthとheightが
-    // 適当な値になってしまうためBBから計算しなおす
+    // CompoundPathはnoCompoundPathを実行した後は
+    // widthとheightが適当な値になってしまうためBBから計算しなおす
     return path.controlBounds[2] - path.controlBounds[0];
 }
 function path_height(path){
-    // CompoundPathはnoCompoundPathを実行した後widthとheightが
-    // 適当な値になってしまうためBBから計算しなおす
+    // CompoundPathはnoCompoundPathを実行した後
+    // widthとheightが適当な値になってしまうためBBから計算しなおす
     return path.controlBounds[1] - path.controlBounds[3];
 }
 
@@ -272,7 +272,6 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
 
 //-----------------------main---------------------------
-var start = Date.now();
 
 // 選択されているパスが元々どの字の一部であったかを調べておく
 var char_ids = [];
@@ -385,7 +384,3 @@ app.executeMenuCommand('group');
 app.executeMenuCommand("Live Pathfinder Exclude");
 app.executeMenuCommand('expandStyle');
 app.executeMenuCommand('ungroup');
-
-var end = Date.now();
-
-alert("elapsed time: " + (end - start) + "ms");

@@ -1,4 +1,4 @@
-# Break Stroke
+# BreakStroke
 
 Automatic Character Divider for Adobe Illustrator
 
