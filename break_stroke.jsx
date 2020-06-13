@@ -118,16 +118,30 @@ function intersect(edge, line){
     return tmp1 && tmp2;
 }
 
-function intersect_any(all_edges, line){
+function intersect_any(all_edges, line, sel_id){
     if(line == undefined){
         alert("line is undefined");
     }
-    // TODO: セレクションのバウンディングボックス事前交差判定で高速化する
+
+    var line_char_id = char_ids[sel_id];
     for(var i = 0; i < all_edges.length; i++){
-        if(intersect(all_edges[i], line)){
-            return true;
+        // セレクション全体と事前交差判定を行う
+
+        // 異なる文字との間に元々ラインは引かれないためスキップ
+        if(line_char_id != char_ids[i]){
+            continue;
+        }
+
+        var sel_edges = all_edges[i];
+        // alert("intersect with selection!");
+        for(var j = 0; j < sel_edges.length; j++){
+            if(intersect(sel_edges[j], line)){
+                return true;
+            }
         }
     }
+
+
     return false;
 }
 
@@ -138,7 +152,7 @@ function calc_center(line){
     return center;
 }
 
-function is_in_text(all_edges, line){
+function is_in_text(all_edges, line, sel_id){
     // ラインがテキストの内部にあるかを判定する
     // ラインの中点から右上に線を伸ばし、
     // それがテキストのエッジと何度交差したかで内外判定を行う
@@ -152,10 +166,18 @@ function is_in_text(all_edges, line){
     }
 
     var intersect_cnt = 0;
-    // TODO: セレクションのバウンディングボックス事前交差判定で高速化する
+
+    var line_char_id = char_ids[sel_id];
     for(var i = 0; i < all_edges.length; i++){
-        if(intersect(all_edges[i], scanline)){
-            intersect_cnt++;
+        // 同じ文字内で無ければスキップ
+        if(line_char_id != char_ids[i]){
+            continue;
+        }
+        
+        for(var j = 0; j < sel_edges.length; j++){
+            if(intersect(sel_edges[j], scanline)){
+                intersect_cnt++;
+            }
         }
     }
 
@@ -176,8 +198,6 @@ function intersect_selections(pathitem1, pathitem2){
 
     var sum_w = Math.max(bb1[2], bb2[2]) - Math.min(bb1[0], bb2[0]);
     var sum_h = Math.max(bb1[1], bb2[1]) - Math.min(bb1[3], bb2[3]);
-
-    // alert("sum_w: " + sum_w + "\n" + "w: " + pathitem1.width + pathitem2.width);
 
     return (sum_w < (path_width(pathitem1) + path_width(pathitem2))) && (sum_h < (path_height(pathitem1) + path_height(pathitem2)));
 }
@@ -255,30 +275,35 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 var start = Date.now();
 
 // 選択されているパスが元々どの字の一部であったかを調べておく
-var char_id = [];
+var char_ids = [];
 for(var i=0; i<sels.length; i++){
     for(var j=0; j<pre_sels.length; j++){
         if(intersect_selections(sels[i], pre_sels[j])){
-            char_id.push(j);
+            char_ids.push(j);
             break;
         }
     }
 }
 
-// 選択されたテキストが含む全ての辺を計算しておく
-// TODO: 高速化のためにセレクションとそれが含むポイントの2次元配列にする
+// 各パスが含む辺を計算しておく
+// all_edgesのインデックスはセレクションのインデックスと一致する
 var all_edges = []
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
+
     points = sels[sel_id].pathPoints;
+    sel_edges = [];
+
     for (var i = 0; i < points.length; i++){
         var edge;
         if(i == points.length-1){
+            // 一番最後の点の次は点0となる
             edge = [points[i].anchor, points[0].anchor];
         }else{
             edge = [points[i].anchor, points[i+1].anchor];
         }
-        all_edges.push(edge);
+        sel_edges.push(edge);
     }
+    all_edges.push(sel_edges);
 }
 
 
@@ -306,7 +331,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 }
 
                 // 元々同じ字のパーツでなければスキップする
-                if(char_id[sel_id] != char_id[cur_sel_id]){
+                if(char_ids[sel_id] != char_ids[cur_sel_id]){
                     continue;
                 }
 
@@ -341,12 +366,12 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             // エッジを跨いでたら引かない
             var min_pos = sels[sorted_sel_id[line_id]].pathPoints[sorted_pt_id[line_id]].anchor;
             var line = [points[pt_id].anchor, min_pos];
-            if(intersect_any(all_edges, line)){
+            if(intersect_any(all_edges, line, sel_id)){
                 continue;
             }
 
             // テキストの外部なら引かない
-            if(!is_in_text(all_edges, line)){
+            if(!is_in_text(all_edges, line, sel_id)){
                 continue;
             }
 
