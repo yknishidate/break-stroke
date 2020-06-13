@@ -149,7 +149,7 @@ function calc_center(line){
 }
 
 
-function is_in_text(all_edges, line, sel_id){
+function is_in_stroke(all_edges, line, sel_id){
     // ラインがテキストの内部にあるかを判定する
     // ラインの中点から右上に線を伸ばし、
     // それがテキストのエッジと何度交差したかで内外判定を行う
@@ -367,7 +367,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             }
 
             // テキストの外部なら引かない
-            if(!is_in_text(all_edges, line, sel_id)){
+            if(!is_in_stroke(all_edges, line, sel_id)){
                 continue;
             }
 
