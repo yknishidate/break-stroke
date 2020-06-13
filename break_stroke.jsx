@@ -11,9 +11,12 @@
 
 app.executeMenuCommand("outline");
 app.executeMenuCommand('ungroup');
-app.executeMenuCommand("noCompoundPath");
 
 doc = app.activeDocument;
+pre_sels = doc.selection;
+
+app.executeMenuCommand("noCompoundPath");
+
 sels = doc.selection;
 doc.layers.add();
 
@@ -160,6 +163,37 @@ function is_in_text(all_edges, line){
     return intersect_cnt%2 == 1;
 }
 
+//-----------------------selection bb---------------------------
+
+function intersect_selections(pathitem1, pathitem2){
+    // selection同士の交差判定
+    // 2つのBBそれぞれの幅の合計よりも、2つを合わせた状態の幅の方が短い場合はx軸において交差している
+    // さらに高さにおいても同様であれば2次元上で交差している
+    // controlBounds: [x0, y0, x1, y1]
+
+    var bb1 = pathitem1.controlBounds;
+    var bb2 = pathitem2.controlBounds;
+
+    var sum_w = Math.max(bb1[2], bb2[2]) - Math.min(bb1[0], bb2[0]);
+    var sum_h = Math.max(bb1[1], bb2[1]) - Math.min(bb1[3], bb2[3]);
+
+    // alert("sum_w: " + sum_w + "\n" + "w: " + pathitem1.width + pathitem2.width);
+
+    return (sum_w < (path_width(pathitem1) + path_width(pathitem2))) && (sum_h < (path_height(pathitem1) + path_height(pathitem2)));
+}
+
+function path_width(path){
+    // CompoundPathはnoCompoundPathを実行した後widthとheightが
+    // 適当な値になってしまうためBBから計算しなおす
+    return path.controlBounds[2] - path.controlBounds[0];
+}
+function path_height(path){
+    // CompoundPathはnoCompoundPathを実行した後widthとheightが
+    // 適当な値になってしまうためBBから計算しなおす
+    return path.controlBounds[1] - path.controlBounds[3];
+}
+
+
 //-----------------------cost---------------------------
 function calc_cost(sel_id, i, cur_sel_id, j){
     // スクリプトのメインとなるコスト関数
@@ -218,6 +252,19 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
 
 //-----------------------main---------------------------
+var start = Date.now();
+
+// 選択されているパスが元々どの字の一部であったかを調べておく
+var char_id = [];
+for(var i=0; i<sels.length; i++){
+    for(var j=0; j<pre_sels.length; j++){
+        if(intersect_selections(sels[i], pre_sels[j])){
+            char_id.push(j);
+            break;
+        }
+    }
+}
+
 // 選択されたテキストが含む全ての辺を計算しておく
 // TODO: 高速化のためにセレクションとそれが含むポイントの2次元配列にする
 var all_edges = []
@@ -233,12 +280,10 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
         all_edges.push(edge);
     }
 }
-if(all_edges.length > 300){
-    alert("This process takes a long time!");
-}
 
 
 // selection loop
+// for(var sel_id = 3; sel_id < 4; sel_id++){
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
     points = sels[sel_id].pathPoints;
 
@@ -260,6 +305,11 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                     continue;
                 }
 
+                // 元々同じ字のパーツでなければスキップする
+                if(char_id[sel_id] != char_id[cur_sel_id]){
+                    continue;
+                }
+
                 var cost = calc_cost(sel_id, pt_id, cur_sel_id, cur_pt_id);
 
                 // TODO: 最大数を設定する
@@ -276,7 +326,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
 
         for(var line_id=0; line_id<sorted_cost.length; line_id++){
-
+            
             if(sorted_cost[line_id] > sorted_cost[0]*threshold_second_line){
                 break;
             }
@@ -310,3 +360,7 @@ app.executeMenuCommand('group');
 app.executeMenuCommand("Live Pathfinder Exclude");
 app.executeMenuCommand('expandStyle');
 app.executeMenuCommand('ungroup');
+
+var end = Date.now();
+
+alert("elapsed time: " + (end - start) + "ms");
