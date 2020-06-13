@@ -39,6 +39,7 @@ threshold_second_line = 1.2;
 // 線の色
 line_color = [255, 0, 0];
 
+
 //-----------------------vec2---------------------------
 function sub(a, b){
     return [a[0] - b[0], a[1] - b[1]];
@@ -307,7 +308,6 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
 
 // selection loop
-// for(var sel_id = 3; sel_id < 4; sel_id++){
 for(var sel_id = 0; sel_id < sels.length; sel_id++){
     points = sels[sel_id].pathPoints;
 
@@ -350,7 +350,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
 
         for(var line_id=0; line_id<sorted_cost.length; line_id++){
-            
+            // 最小コストよりも十分にコストが高ければbreak
             if(sorted_cost[line_id] > sorted_cost[0]*threshold_second_line){
                 break;
             }
@@ -375,7 +375,6 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             }
 
             add_line(points[pt_id].anchor, min_pos);
-    
         }
     }
 }
