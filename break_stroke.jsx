@@ -39,7 +39,6 @@ threshold_second_line = 1.2;
 // 線の色
 line_color = [255, 0, 0];
 
-
 //-----------------------vec2---------------------------
 function sub(a, b){
     return [a[0] - b[0], a[1] - b[1]];
@@ -119,6 +118,7 @@ function intersect(edge, line){
     return tmp1 && tmp2;
 }
 
+
 function intersect_any(all_edges, line, sel_id){
     if(line == undefined){
         alert("line is undefined");
@@ -132,14 +132,12 @@ function intersect_any(all_edges, line, sel_id){
         }
 
         var sel_edges = all_edges[i];
-        // alert("intersect with selection!");
         for(var j = 0; j < sel_edges.length; j++){
             if(intersect(sel_edges[j], line)){
                 return true;
             }
         }
     }
-
     return false;
 }
 
@@ -149,6 +147,7 @@ function calc_center(line){
     var center = [(pos1[0] + pos2[0])/2, (pos1[1] + pos2[1])/2];
     return center;
 }
+
 
 function is_in_text(all_edges, line, sel_id){
     // ラインがテキストの内部にあるかを判定する
@@ -167,10 +166,16 @@ function is_in_text(all_edges, line, sel_id){
 
     var line_char_id = char_ids[sel_id];
     for(var i = 0; i < all_edges.length; i++){
+
+
         // 同じ文字内で無ければスキップ
         if(line_char_id != char_ids[i]){
             continue;
         }
+
+        var sel_edges = all_edges[i];
+        // alert("ok");
+        // return;
         
         for(var j = 0; j < sel_edges.length; j++){
             if(intersect(sel_edges[j], scanline)){
@@ -197,20 +202,19 @@ function intersect_selections(pathitem1, pathitem2){
     var sum_w = Math.max(bb1[2], bb2[2]) - Math.min(bb1[0], bb2[0]);
     var sum_h = Math.max(bb1[1], bb2[1]) - Math.min(bb1[3], bb2[3]);
 
-    var intersect_x = sum_w < (path_width(pathitem1) + path_width(pathitem2));
-    var intersect_y = sum_h < (path_height(pathitem1) + path_height(pathitem2));
+    // alert("sum_w: " + sum_w + "\n" + "w: " + pathitem1.width + pathitem2.width);
 
-    return intersect_x && intersect_y;
+    return (sum_w < (path_width(pathitem1) + path_width(pathitem2))) && (sum_h < (path_height(pathitem1) + path_height(pathitem2)));
 }
 
 function path_width(path){
-    // CompoundPathはnoCompoundPathを実行した後は
-    // widthとheightが適当な値になってしまうためBBから計算しなおす
+    // CompoundPathはnoCompoundPathを実行した後widthとheightが
+    // 適当な値になってしまうためBBから計算しなおす
     return path.controlBounds[2] - path.controlBounds[0];
 }
 function path_height(path){
-    // CompoundPathはnoCompoundPathを実行した後
-    // widthとheightが適当な値になってしまうためBBから計算しなおす
+    // CompoundPathはnoCompoundPathを実行した後widthとheightが
+    // 適当な値になってしまうためBBから計算しなおす
     return path.controlBounds[1] - path.controlBounds[3];
 }
 
@@ -273,6 +277,7 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
 
 //-----------------------main---------------------------
+var start = Date.now();
 
 // 選択されているパスが元々どの字の一部であったかを調べておく
 var char_ids = [];
@@ -350,7 +355,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
 
 
         for(var line_id=0; line_id<sorted_cost.length; line_id++){
-            // 最小コストよりも十分にコストが高ければbreak
+            
             if(sorted_cost[line_id] > sorted_cost[0]*threshold_second_line){
                 break;
             }
@@ -374,7 +379,10 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 continue;
             }
 
+            // alert("add line");
+
             add_line(points[pt_id].anchor, min_pos);
+    
         }
     }
 }
@@ -383,3 +391,7 @@ app.executeMenuCommand('group');
 app.executeMenuCommand("Live Pathfinder Exclude");
 app.executeMenuCommand('expandStyle');
 app.executeMenuCommand('ungroup');
+
+var end = Date.now();
+
+alert("elapsed time: " + (end - start) + "ms");
