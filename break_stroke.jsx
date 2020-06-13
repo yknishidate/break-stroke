@@ -163,20 +163,14 @@ function is_in_text(all_edges, line, sel_id){
     }
 
     var intersect_cnt = 0;
-
     var line_char_id = char_ids[sel_id];
     for(var i = 0; i < all_edges.length; i++){
-
-
         // 同じ文字内で無ければスキップ
         if(line_char_id != char_ids[i]){
             continue;
         }
 
         var sel_edges = all_edges[i];
-        // alert("ok");
-        // return;
-        
         for(var j = 0; j < sel_edges.length; j++){
             if(intersect(sel_edges[j], scanline)){
                 intersect_cnt++;
@@ -202,9 +196,9 @@ function intersect_selections(pathitem1, pathitem2){
     var sum_w = Math.max(bb1[2], bb2[2]) - Math.min(bb1[0], bb2[0]);
     var sum_h = Math.max(bb1[1], bb2[1]) - Math.min(bb1[3], bb2[3]);
 
-    // alert("sum_w: " + sum_w + "\n" + "w: " + pathitem1.width + pathitem2.width);
-
-    return (sum_w < (path_width(pathitem1) + path_width(pathitem2))) && (sum_h < (path_height(pathitem1) + path_height(pathitem2)));
+    var intersected_x = sum_w < (path_width(pathitem1) + path_width(pathitem2));
+    var intersected_y = sum_h < (path_height(pathitem1) + path_height(pathitem2));
+    return intersected_x && intersected_y;
 }
 
 function path_width(path){
@@ -277,7 +271,7 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
 
 //-----------------------main---------------------------
-var start = Date.now();
+// var start = Date.now();
 
 // 選択されているパスが元々どの字の一部であったかを調べておく
 var char_ids = [];
@@ -299,13 +293,11 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
     sel_edges = [];
 
     for (var i = 0; i < points.length; i++){
-        var edge;
+        var next = i + 1;
         if(i == points.length-1){
-            // 一番最後の点の次は点0となる
-            edge = [points[i].anchor, points[0].anchor];
-        }else{
-            edge = [points[i].anchor, points[i+1].anchor];
+            next = 0;  // 一番最後の点の次は点0となる
         }
+        var edge = [points[i].anchor, points[next].anchor];
         sel_edges.push(edge);
     }
     all_edges.push(sel_edges);
@@ -379,10 +371,7 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 continue;
             }
 
-            // alert("add line");
-
             add_line(points[pt_id].anchor, min_pos);
-    
         }
     }
 }
@@ -392,6 +381,5 @@ app.executeMenuCommand("Live Pathfinder Exclude");
 app.executeMenuCommand('expandStyle');
 app.executeMenuCommand('ungroup');
 
-var end = Date.now();
-
-alert("elapsed time: " + (end - start) + "ms");
+// var end = Date.now();
+// alert("elapsed time: " + (end - start) + "ms");
