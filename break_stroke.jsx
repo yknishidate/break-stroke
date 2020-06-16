@@ -23,6 +23,7 @@ doc.layers.add();
 EPS = 0.0001;
 MAX = 1000000;
 X_AXIS = [1.0, 0.0];
+Y_AXIS = [0.0, 1.0];
 
 
 //-----------------------parameters---------------------------
@@ -33,7 +34,7 @@ weight_gradient = 0.2;          // ラインの傾きに掛かるウェイト
 
 // 基本的にはある点から最小コストの点をラインで結ぶ
 // ただし、最小コストに近いラインは追加で引ける
-// このときの近いかの判定に使う閾値
+// このときの近いかどうかの判定に使う閾値
 threshold_second_line = 1.2;
 
 // 線の色
@@ -263,15 +264,16 @@ function calc_cost(sel_id, i, cur_sel_id, j){
     cost += weight_direction * (1 - max_dot);
 
     // * 斜めに進むコスト
-    var theta_deg = Math.acos(dot(new_dir, X_AXIS)) * ( 180 / Math.PI );
-    cost += weight_gradient * (theta_deg % 90) / 90;
+    var x_grad_cost = 1 - Math.abs(dot(new_dir, X_AXIS));
+    var y_grad_cost = 1 - Math.abs(dot(new_dir, Y_AXIS));
+    cost += weight_gradient * Math.min(x_grad_cost, y_grad_cost);
 
     return cost;
 }
 
 
 //-----------------------main---------------------------
-// var start = Date.now();
+var start = Date.now();
 
 // 選択されているパスが元々どの字の一部であったかを調べておく
 var char_ids = [];
@@ -381,5 +383,4 @@ app.executeMenuCommand("Live Pathfinder Exclude");
 app.executeMenuCommand('expandStyle');
 app.executeMenuCommand('ungroup');
 
-// var end = Date.now();
-// alert("elapsed time: " + (end - start) + "ms");
+// alert("elapsed time: " + (Date.now() - start) + "ms");
