@@ -22,8 +22,8 @@ doc.layers.add();
 
 EPS = 0.0001;
 MAX = 1000000;
-X_AXIS = [1.0, 0.0];
-Y_AXIS = [0.0, 1.0];
+X_DIR = [1.0, 0.0];
+Y_DIR = [0.0, 1.0];
 
 
 //-----------------------parameters---------------------------
@@ -244,7 +244,7 @@ function calc_cost(sel_id, i, cur_sel_id, j){
     }
 
     // * 距離コスト
-    // セレクション全体の大きさを基準にする
+    // セレクション全体の大きさ(高さと幅の小さいほう)を基準にする
     var standard_dist = Math.min(sels[sel_id].height, sels[sel_id].width);
     var dist = calc_distance(base_pos, target_pos);
     cost += weight_distance * (dist/standard_dist);
@@ -268,8 +268,8 @@ function calc_cost(sel_id, i, cur_sel_id, j){
     cost += weight_direction * (1 - max_dot);
 
     // * 斜めに進むコスト
-    var x_grad_cost = 1 - Math.abs(dot(new_dir, X_AXIS));
-    var y_grad_cost = 1 - Math.abs(dot(new_dir, Y_AXIS));
+    var x_grad_cost = 1 - Math.abs(dot(new_dir, X_DIR));
+    var y_grad_cost = 1 - Math.abs(dot(new_dir, Y_DIR));
     cost += weight_gradient * Math.min(x_grad_cost, y_grad_cost);
 
     return cost;
@@ -365,9 +365,11 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
                 continue;
             }
 
-            // エッジを跨いでたら引かない
+            // ラインを生成
             var min_pos = sels[sorted_sel_id[line_id]].pathPoints[sorted_pt_id[line_id]].anchor;
             var line = [points[pt_id].anchor, min_pos];
+
+            // エッジを跨いでたら引かない
             if(intersect_any(all_edges, line, sel_id)){
                 continue;
             }
