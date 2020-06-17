@@ -222,12 +222,24 @@ function calc_cost(sel_id, i, cur_sel_id, j){
     
     var cost = 0;
 
+    // コスト計算をする対象経路は base_pos -> target_pos となる
     base_points = sels[sel_id].pathPoints;
     base_pos = base_points[i].anchor;
     target_pos = sels[cur_sel_id].pathPoints[j].anchor;
 
+    // ベースポイントの隣接ポイントID
+    var prev_id = i-1;
+    if(i == 0){
+        prev_id = base_points.length - 1;
+    }
+    var next_id = i+1;
+    if(i == base_points.length - 1){
+        next_id = 1;
+    }
+
     // * 隣接ポイント以外に進むコスト
-    if(sel_id != cur_sel_id || j - i != 1){
+    // (パスが異なる or (次の点ではない and 前の点ではない))
+    if(sel_id != cur_sel_id || (j != next_id && j != prev_id)){
         cost += cost_jump_point;
     }
 
@@ -239,20 +251,12 @@ function calc_cost(sel_id, i, cur_sel_id, j){
 
     // * 方向コスト
     // 前のポイントからの方向ベクトルを求める
-    var prev_id = i-1;
-    if(i == 0){
-        prev_id = base_points.length - 1;
-    }
     var dir_from_prev = dir(base_points[prev_id].anchor, base_pos);
     if(has_left_handle(base_points[i])){  // ハンドルを持っている場合はベクトルを変更
         var left_pos = base_points[i].leftDirection;
         dir_from_prev = dir(left_pos, base_pos);
     }
     // 後のポイントからの方向ベクトルを求める
-    var next_id = i+1;
-    if(i == base_points.length - 1){
-        next_id = 1;
-    }
     var dir_from_next = dir(base_points[next_id].anchor, base_pos);
     if(has_right_handle(base_points[i])){  // ハンドルを持っている場合はベクトルを変更
         var right_pos = base_points[i].rightDirection;
