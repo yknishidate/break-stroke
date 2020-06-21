@@ -351,8 +351,9 @@ for(var sel_id = 0; sel_id < sels.length; sel_id++){
             }
         }
 
-
-        for(var line_id=0; line_id<sorted_cost.length; line_id++){
+        // コストを元にラインを引いていく
+        var max_num_lines = 2;
+        for(var line_id=0; line_id<max_num_lines; line_id++){
             
             if(sorted_cost[line_id] > sorted_cost[0]*threshold_second_line){
                 break;
